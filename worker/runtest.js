@@ -1,4 +1,4 @@
-'use strict';
+
 
 const
   CustomReporter = require('./customreporter'),
@@ -12,13 +12,12 @@ const
   args = JSON.parse(process.argv[process.argv.length - 1]),
   options = args.options;
 
-for(let file of args.requires)
-  require(file);
+for (const file of args.requires) { require(file); }
 
 if (Object.keys(options || {}).length) {
   console.log(`Applying Mocha options:\n${indent(JSON.stringify(options, null, 2))}`);
 } else {
-  console.log(`No Mocha options are configured. You can set it under File > Preferences > Workspace Settings.`);
+  console.log('No Mocha options are configured. You can set it under File > Preferences > Workspace Settings.');
 }
 
 // const requireOptions = options.require || [];
@@ -35,7 +34,7 @@ if (Object.keys(options || {}).length) {
 
 const mocha = new Mocha(options);
 
-args.files.forEach(file => {
+args.files.forEach((file) => {
   mocha.addFile(file);
 });
 
@@ -44,7 +43,7 @@ const grep = args.grep;
 if (grep) {
   console.log();
   console.log('Grep pattern:');
-  console.log('  ' + grep);
+  console.log(`  ${grep}`);
 
   mocha.grep(new RegExp(grep, 'i'));
 }

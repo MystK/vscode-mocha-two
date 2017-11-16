@@ -1,15 +1,15 @@
-'use strict';
+
 
 const
   assert = require('assert');
 
-describe('When environment variable is set in settings', function () {
-  it('should run with them', function () {
+describe('When environment variable is set in settings', () => {
+  it('should run with them', () => {
     assert(process.env.HELLO_WORLD, 'Hello, World!');
   });
 });
 
-it('should inherit environment variables', function () {
+it('should inherit environment variables', () => {
   // Should cover Linux/Mac and Windows
   assert(process.env.HOME || process.env.PATHEXT);
 

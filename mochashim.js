@@ -1,46 +1,42 @@
-'use strict';
-
-const
-  config = require('./config'),
-  fork = require('./fork'),
-  path = require('path'),
-  Promise = require('bluebird'),
-  vscode = require('vscode');
+const config = require('./config');
+const fork = require('./fork');
+const path = require('path');
+const Promise = require('bluebird');
+const vscode = require('vscode');
 
 function envWithNodePath(rootPath) {
   return Object.assign({}, process.env, {
-    NODE_PATH: `${rootPath}${path.sep}node_modules`
+    NODE_PATH: `${rootPath}${path.sep}node_modules`,
   }, config.env());
 }
 
-function applySubdirectory(rootPath){
-  const subdirectory = config.subdirectory()
+function applySubdirectory(rootPath) {
+  const subdirectory = config.subdirectory();
 
-  if(subdirectory)
-    rootPath = path.resolve(rootPath, subdirectory);
+  let newRootPath;
+  if (subdirectory) {
+    newRootPath = path.resolve(rootPath, subdirectory);
+  }
 
-  return rootPath;
+  return newRootPath || rootPath;
 }
 
 function stripWarnings(text) { // Remove node.js warnings, which would make JSON parsing fail
-  return text.replace(/\(node:\d+\) DeprecationWarning:\s[^\n]+/g, "");
+  return text.replace(/\(node:\d+\) DeprecationWarning:\s[^\n]+/g, '');
 }
 
-vscode.window.onDidCloseTerminal(terminalClosed => {
-  if (terminals[terminalClosed.name]) terminals[terminalClosed.name]
-});
-let terminals = {}
-function runTests(testFiles, grep, messages) {
-  const parsedGrep = grep.slice(2,-1);
+const terminals = {};
+function runTests(testFiles, grep) {
+  const parsedGrep = grep.slice(2, -1);
   if (terminals[parsedGrep]) terminals[parsedGrep].dispose();
-  terminals[parsedGrep] =  vscode.window.createTerminal({ name: parsedGrep });
-  terminals[parsedGrep].show(true)
-  terminals[parsedGrep].sendText(`node node_modules/mocha/bin/_mocha --opts mocha.opts ./**/*.spec.js --grep "${grep}"`)
+  terminals[parsedGrep] = vscode.window.createTerminal({ name: parsedGrep });
+  terminals[parsedGrep].show(true);
+  terminals[parsedGrep].sendText(`${path.relative(path.resolve(), path.resolve('node_modules', '.bin', 'mocha'))} ${config.optionsFile().length ? `--opts ${config.optionsFile()}` : ''} ${config.files().glob} --grep "${grep}"`);
 }
 
 function findTests(rootPath) {
   // Allow the user to choose a different subfolder
-  rootPath = applySubdirectory(rootPath);
+  const parsedRootPath = applySubdirectory(rootPath);
 
   return fork(
     path.resolve(module.filename, '../worker/findtests.js'),
@@ -49,46 +45,46 @@ function findTests(rootPath) {
         options: config.options(),
         files: {
           glob: config.files().glob,
-          ignore: config.files().ignore
+          ignore: config.files().ignore,
         },
         requires: config.requires(),
-        rootPath
-      })
+        rootPath: parsedRootPath,
+      }),
     ],
     {
-      env: envWithNodePath(rootPath)
-    }
+      env: envWithNodePath(parsedRootPath),
+    },
   ).then(process => new Promise((resolve, reject) => {
-    const
-      stdoutBuffers = [],
-      resultJSONBuffers = [];
+    const stdoutBuffers = [];
+    const resultJSONBuffers = [];
 
-    process.stderr.on('data', data => {
+    process.stderr.on('data', (data) => {
       resultJSONBuffers.push(data);
     });
 
-    process.stdout.on('data', data => {
+    process.stdout.on('data', (data) => {
       stdoutBuffers.push(data);
     });
 
     process
-      .on('error', err => {
+      .on('error', (err) => {
         vscode.window.showErrorMessage(`Failed to run Mocha due to ${err.message}`);
         reject(err);
       })
-      .on('exit', code => {
+      .on('exit', (code) => {
         console.log(Buffer.concat(stdoutBuffers).toString());
 
         const stderrText = Buffer.concat(resultJSONBuffers).toString();
         let resultJSON;
 
+        let caughtCode;
         try {
           resultJSON = stderrText && JSON.parse(stripWarnings(stderrText));
         } catch (ex) {
-          code = 1;
+          caughtCode = 1;
         }
 
-        if (code) {
+        if (code || caughtCode) {
           const outputChannel = vscode.window.createOutputChannel('Mocha');
 
           outputChannel.show();

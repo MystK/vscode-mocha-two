@@ -1,5 +1,3 @@
-'use strict';
-
 const vscode = require('vscode');
 
 function getConfiguration() {
@@ -13,6 +11,8 @@ exports.env = function env() {
 exports.options = function options() {
   return getConfiguration().options;
 };
+
+exports.optionsFile = () => getConfiguration().optionsFile;
 
 exports.node_options = function options() {
   return getConfiguration().node_options;
@@ -29,8 +29,7 @@ exports.subdirectory = function subdirectory() {
 exports.requires = function requires() {
   const files = getConfiguration().requires || [];
 
-  if(!Array.isArray(files))
-    throw new Error("mocha.requires configuration must be an array of files");
+  if (!Array.isArray(files)) { throw new Error('mocha.requires configuration must be an array of files'); }
 
   return files.map(s => s.toString());
 };

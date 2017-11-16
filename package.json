@@ -70,7 +70,7 @@
           "description": "Mocha: Options to run Mocha"
         },
         "mocha.files.glob": {
-          "default": "test/**/*.js",
+          "default": "**/*.spec.js",
           "description": "Mocha: Glob to search for test files",
           "type": "string"
         },
@@ -91,15 +91,22 @@
         "mocha.node_options": {
           "default": [],
           "description": "Mocha: Options to pass to node executable"
+        },
+        "mocha.optionsFile": {
+          "default": "",
+          "description": "Mocha: Options file path to pass to Mocha"
         }
       }
     }
   },
   "devDependencies": {
+    "eslint": "^4.11.0",
+    "eslint-config-airbnb-base": "^12.1.0",
+    "eslint-plugin-import": "^2.8.0",
     "vscode": "0.11.x"
   },
   "dependencies": {
-    "babylon": "^6.13.1",
+    "babylon": "^6.18.0",
     "bluebird": "^3.3.5",
     "escape-regexp": "0.0.1",
     "glob": "^7.0.3",

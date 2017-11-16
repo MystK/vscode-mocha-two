@@ -60,8 +60,11 @@ Under File > Preferences > Workspace Settings, you can configure [Mocha options]
 // Mocha: Options to pass to node executable
 "mocha.node_options": [],
 
+// Mocha: Options file path to pass to Mocha
+"mocha.optionsFile": ""
+
 // Mocha: Subdirectory in the Workspace where run mocha from
-"mocha.subfolder": "",
+"mocha.subdirectory": "",
 
 // Mocha: List of files to require before running mocha
 "mocha.requires": [],
