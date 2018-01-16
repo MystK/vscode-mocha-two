@@ -1,8 +1,8 @@
+const path = require('path');
+const vscode = require('vscode');
+
 const config = require('./config');
 const fork = require('./fork');
-const path = require('path');
-const Promise = require('bluebird');
-const vscode = require('vscode');
 
 function envWithNodePath(rootPath) {
   return Object.assign({}, process.env, {
@@ -27,11 +27,18 @@ function stripWarnings(text) { // Remove node.js warnings, which would make JSON
 
 const terminals = {};
 function runTests(testFiles, grep) {
-  const parsedGrep = grep.slice(2, -1);
-  if (terminals[parsedGrep]) terminals[parsedGrep].dispose();
-  terminals[parsedGrep] = vscode.window.createTerminal({ name: parsedGrep });
-  terminals[parsedGrep].show(true);
-  terminals[parsedGrep].sendText(`${path.relative(path.resolve(), path.resolve('node_modules', '.bin', 'mocha'))} ${config.optionsFile().length ? `--opts ${config.optionsFile()}` : ''} ${config.files().glob} --grep "${grep}"`);
+  const { rootPath } = vscode.workspace;
+  const mochaPath = path.relative(rootPath, path.resolve(rootPath, 'node_modules', '.bin', 'mocha'));
+  const testFilesPath = (
+    testFiles.length ?
+      testFiles.map(testFile => path.relative(rootPath, testFile)) :
+      config.files().glob
+  );
+  const terminalName = grep ? grep.slice(2, -1) : 'Mocha Tests';
+  if (terminals[terminalName]) terminals[terminalName].dispose();
+  terminals[terminalName] = vscode.window.createTerminal({ name: terminalName });
+  terminals[terminalName].show(true);
+  terminals[terminalName].sendText(`${mochaPath}${config.optionsFile().length ? ` --opts ${config.optionsFile()}` : ''} ${testFilesPath}"${grep ? ` --grep ${grep}` : ''}"`);
 }
 
 function findTests(rootPath) {

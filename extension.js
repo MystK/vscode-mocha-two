@@ -29,7 +29,7 @@ function hasWorkspace() {
   return validWorkspace;
 }
 
-function runTestAtCursor() {
+async function runTestAtCursor() {
   const editor = vscode.window.activeTextEditor;
 
   if (!editor) {
@@ -39,7 +39,7 @@ function runTestAtCursor() {
   }
 
   let detectError = 'No test(s) were detected at the current cursor position.';
-  let test = null;
+  let test;
 
   try {
     test = parser.getTestAtCursor(editor.document.getText(), editor.selection.active);
@@ -47,19 +47,21 @@ function runTestAtCursor() {
     console.error(e);
     detectError = `Parsing failed while detecting test(s) at the current cursor position: ${e.message}`;
   }
-  return runner.loadTestFiles()
-    .then(() => {
-      if (test) {
-        return runner.runWithGrep(test.label, editor.document.fileName);
-      }
 
-      // Only run test from the current file
-      const currentFile = editor.document.fileName;
-      runner.tests = runner.tests.filter(t => t.file === currentFile);
+  try {
+    await runner.loadTestFiles();
 
-      return runner.runAll([`WARNING: ${detectError} Running all tests in the current file.`]);
-    })
-    .catch(err => vscode.window.showErrorMessage(`Failed to run test(s) at the cursor position due to ${err.message}`));
+    // Only run test from the current file
+    const currentFile = editor.document.fileName;
+    runner.tests = runner.tests.filter(t => t.file === currentFile);
+
+    if (test) return runner.runWithGrep(test.label, editor.document.fileName);
+
+    vscode.window.showErrorMessage(`WARNING: ${detectError} Running all tests in the current file.`);
+    return runner.runAll();
+  } catch (err) {
+    return vscode.window.showErrorMessage(`Failed to run test(s) at the cursor position due to ${err.message}`);
+  }
 }
 
 function selectAndRunTest() {

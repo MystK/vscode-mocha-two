@@ -97,7 +97,20 @@
           "description": "Mocha: Options file path to pass to Mocha"
         }
       }
-    }
+    },
+    "keybindings":[
+      {
+        "command": "mocha.runLastSetAgain",
+        "key": "alt+shift+r",
+        "mac": "cmd+shift+r"
+      },
+      {
+        "command": "mocha.runTestAtCursor",
+        "key": "ctrl+shift+f8",
+        "mac": "cmd+shift+i",
+        "when": "editorTextFocus"
+      }
+    ]
   },
   "devDependencies": {
     "eslint": "^4.11.0",
