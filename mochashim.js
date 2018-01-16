@@ -38,7 +38,7 @@ function runTests(testFiles, grep) {
   if (terminals[terminalName]) terminals[terminalName].dispose();
   terminals[terminalName] = vscode.window.createTerminal({ name: terminalName });
   terminals[terminalName].show(true);
-  terminals[terminalName].sendText(`${mochaPath}${config.optionsFile().length ? ` --opts ${config.optionsFile()}` : ''} ${testFilesPath}"${grep ? ` --grep ${grep}` : ''}"`);
+  terminals[terminalName].sendText(`${mochaPath}${config.optionsFile().length ? ` --opts ${config.optionsFile()}` : ''} "${testFilesPath}" ${grep ? ` --grep "${grep}"` : ''}`);
 }
 
 function findTests(rootPath) {
