@@ -49,16 +49,13 @@ async function runTestAtCursor() {
   }
 
   try {
-    await runner.loadTestFiles();
-
     // Only run test from the current file
     const currentFile = editor.document.fileName;
     runner.tests = runner.tests.filter(t => t.file === currentFile);
 
     if (test) return runner.runWithGrep(test.label, editor.document.fileName);
 
-    vscode.window.showErrorMessage(`WARNING: ${detectError} Running all tests in the current file.`);
-    return runner.runAll();
+    return vscode.window.showErrorMessage(`WARNING: ${detectError} Could not run test at cursor!`);
   } catch (err) {
     return vscode.window.showErrorMessage(`Failed to run test(s) at the cursor position due to ${err.message}`);
   }
