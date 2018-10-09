@@ -1,4 +1,4 @@
-const babylon = require('babylon');
+const babylon = require('@babel/parser');
 
 if (!RegExp.escape) { RegExp.escape = s => String(s).replace(/[\\^$*+?.()|[\]{}]/g, '\\$&'); }
 
