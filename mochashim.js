@@ -1,5 +1,6 @@
 const path = require('path');
 const vscode = require('vscode');
+const shell = require('shell-escape-tag').default;
 
 const config = require('./config');
 const fork = require('./fork');
@@ -28,17 +29,21 @@ function stripWarnings(text) { // Remove node.js warnings, which would make JSON
 const terminals = {};
 function runTests(testFiles, grep) {
   const { rootPath } = vscode.workspace;
-  const mochaPath = path.relative(rootPath, path.resolve(rootPath, 'node_modules', '.bin', 'mocha'));
+
   const testFilesPath = (
     testFiles.length ?
       testFiles.map(testFile => path.relative(rootPath, testFile)) :
       config.files().glob
   );
+
   const terminalName = grep ? grep.slice(2, -1) : 'Mocha Tests';
   if (terminals[terminalName]) terminals[terminalName].dispose();
   terminals[terminalName] = vscode.window.createTerminal({ name: terminalName });
   terminals[terminalName].show(true);
-  terminals[terminalName].sendText(`${mochaPath}${config.optionsFile().length ? ` --opts ${config.optionsFile()}` : ''} "${testFilesPath}" ${grep ? ` --grep "${grep}"` : ''}`);
+
+  const command = `npx ${testFilesPath[0].includes('.ts') ? 'ts-' : ''}mocha${config.optionsFile().length ? ` --opts ${config.optionsFile()}` : ''} "${testFilesPath}" ${grep ? shell.escape('--grep', grep) : ''}`;
+
+  terminals[terminalName].sendText(command);
 }
 
 function findTests(rootPath) {
